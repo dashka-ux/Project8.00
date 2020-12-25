@@ -1,182 +1,154 @@
-#include <time.h>
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <locale>
 #include <iostream>
+#include <conio.h>
+#include <time.h>
 #include <stack>
 #include <queue>
-#include <conio.h>
+#include <stdio.h>
+#include <Windows.h>
+#include <stdlib.h>
+
 using namespace std;
-queue <int> Q;
-int i, j, m, n, h;
-int* vis;
-int* v;
-int** graph;
-int* ex;
-int* e;
+int* dist;
+int* dist_2;
+int* visited;
+int** graph;			// взвешанный ориентированный
+int** graph_2;			// взвешанный неориентированный
+queue<int>Q;
+queue<int>QQ;
+int start, start_2;
+int N, N_2, j, i, R, max1, dia;
+int* ecs;
 
-void BFS() {
-	for (int j = 0; j < m; j++) {
-		printf("\nПоиск расстояний от вершины %d\n", j + 1);
-		for (int i = 0; i < m; i++) {
-			vis[i] = 1000;
-			v[j] = 0;
+void BFSD(int v, int N, int** graph) {
 
-		}
-
-		int s = j;
-		Q.push(s);
-		int st = s;
-
-		vis[s] = 0;
-
-		while (!Q.empty())
-		{
-			s = Q.front();
-			Q.pop();
-
-			for (int r = 0; r < n; r++)
-				if ((graph[s][r] > 0) && (vis[r] > vis[s] + graph[s][r]))
-				{
-					Q.push(r);
-					vis[r] = vis[s] + graph[s][r];
-				}
-		}
-
-		for (int i = 0; i < m; i++)
-		{
-
-			//проверка на изолированную вершину
-			if (vis[i] == 1000) {
-				printf("- ");
-				vis[i] = 0;
+	Q.push(v);
+	dist[v] = 0;
+	while (!Q.empty()) {
+		v = Q.front();
+		Q.pop();
+		for (int i = 0; i < N; i++) {
+			if ((graph[v][i] > 0) && (dist[i] == -1)) {
+				Q.push(i);
+				dist[i] = dist[v] + graph[v][i];
 			}
-			//вывод вершин
-			else
-				printf("%d ", vis[i]);
-			v[j] += vis[i];
-
-			if (vis[i] > ex[st])
-			{
-				ex[st] = vis[i];
-			}
-
 		}
-	}
-	int k = 0;
-	int rad = 100000;
-	int dia = 0;
-	printf("\nЭксцентриситеты: \n");
-	for (int i = 0; i < m; i++) {
-
-		printf("%d ", ex[i]);
-		if (ex[i] == 0)
-			continue;
-		if (ex[i] > dia)
-			dia = ex[i];
-		if ((ex[i] < rad) && (ex[i] != -1))
-			rad = ex[i];
-	}
-	printf("\n\nРадиус - %d\nДиаметр - %d", rad, dia);
-	printf("\nЦентральные вершины: \n");
-	for (int i = 0; i < m; i++) {
-		if (ex[i] == rad)
-			printf("%d ", i + 1);
-	}
-	printf("\nПериферийные вершины: \n");
-	for (int i = 0; i < m; i++) {
-		if (ex[i] == dia)
-			printf("%d ", i + 1);
-	}
-	printf("\nИзолированные вершины: \n");
-	for (int i = 0; i < m; i++) {
-		if (ex[i] == 0) {
-			printf("%d ", i + 1);
-		}
-	}
-	printf("\nДоминирующие вершины: \n");
-
-	for (int i = 0; i < m; i++) {
-		if (e[i] == m - 1)
-			printf("%d ", i + 1);
-	}
-
-	printf("\nКонцевые вершины: \n");
-	for (int i = 0; i < m; i++) {
-		if (e[i] == 1)
-			printf("%d ", i + 1);
 	}
 }
 
-void DFS_main()
-{
-	setlocale(LC_ALL, "Rus");
-	printf("Размерность: ");
-	scanf_s("%d", &m);
-	printf("Максимальный вес ребра: ");
-	scanf_s("%d", &h);
-	h++;
-	n = m;
-	int p = 0;
-	graph = new int* [m];
-	v = (int*)malloc(m * sizeof(int));
-	ex = (int*)malloc(m * sizeof(int));
-	e = (int*)malloc(m * sizeof(int));
-	vis = (int*)malloc(m * sizeof(int));
 
-	for (int i = 0; i < m; i++) {
-		graph[i] = new int[m];
-	}
-	//генерация матрицы
-	int start;
-	printf("Матрица смежности: \n");
+int main() {
 	srand(time(NULL));
-	for (i = 0; i < m; ++i) {
-		for (j = i; j < m; ++j) {
-			graph[i][j] = graph[j][i] = rand() % h;
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
+	printf("Ведите размер матрицы  ");
+	scanf_s("%d", &N_2);
+	srand(time(NULL));
+	graph_2 = new int* [N_2];
+	dist_2 = new int[N_2];
+	visited = new int[N_2];
+	ecs = new int [N_2];
+
+	for (int i = 0; i < N_2; i++)
+	{
+		graph_2[i] = new int[N_2];
+	}
+	for (int i = 0; i < N_2; i++)
+	{
+		dist_2[i] = -1;
+	}
+	for (int i = 0; i < N_2; i++)
+	{
+		ecs[i] = 3;
+	}
+
+	printf("\n Матрица смежности для взвешенного неориентированного графа \n\n");
+
+	for (i = 0; i < N_2; i++)
+	{
+		for (j = i; j < N_2; ++j)
+		{
+			graph_2[i][j] = graph_2[j][i] = rand() % 10;
+			graph_2[i][i] = graph_2[j][j] = 0; // чтобы петля(узел) не создавалась
 		}
-		graph[i][i] = 0; //обнуление вершины
+
 	}
-
-	//нумерование столбцов
-	printf(" ");
-	for (j = 0; j < m; j++)
+	printf("   ");
+	for (j = 0; j < N_2; j++)
 	{
-		printf("k%d ", j + 1);
+		printf("%4d  ", j + 1); //горизонт
 	}
+	printf("\n\n");
+	for (i = 0; i < N_2; i++) {
 
-	printf("\n");
+		printf(" %d ", i + 1); // вертик
 
-	//нумерование строк
-	for (i = 0; i < m; ++i)
-	{
-		printf("v%d ", i + 1);
-		for (j = 0; j < m; ++j)
-			printf("%d ", graph[i][j]);
+		for (j = 0; j < N_2; j++)
+		{
+			printf("%4d  ", graph_2[i][j]);
+		}
 		printf("\n\n");
 	}
 
-	for (int i = 0; i < m; i++) {
-		e[i] = 0;
-
-	}
-	for (i = 0; i < m; i++)
-	{
-		printf("\n%d - ", i + 1);
-		for (j = 0; j < m; j++) {
-			if (graph[i][j] != 0) {
-				printf("%d ", j + 1);
-				e[i]++;
-			}
+	printf("\n\n Введите начальную вершину ");
+	for (start_2 = 0; start_2 < N_2; start_2++) {
+		//BFSD_2(start_2 - 1, N_2, graph_2);
+		dist = new int[N_2];
+		for (int i = 0; i < N_2; i++)
+		{
+			dist[i] = -1;
 		}
-	}
+		BFSD(start_2 , N_2, graph_2);
+		printf("\n\n Вершины      ");
+		for (int i = 1; i <= N_2; i++) {
+			printf("|%3d ", i);
+		}
+		printf("\n Расстояние   ");
+		for (int i = 0; i < N_2; i++) {
+			printf("|%3d ", dist[i]);
+		}
+		printf("\n\n");
 
-	printf("\n");
-	BFS();
-	_getch();
+		max1 = 0;
+		for (int i = 0; i < N_2; i++)
+		{
+			if (dist[i] >= max1)
+				max1 = dist[i];
+		}
+		ecs[start_2] = max1;
+		{
+		dia = 0;
+		for (int i = 0; i < N_2; i++)
+		{
+			if (ecs[i] >= dia)
+				dia = ecs[i];
+		}
+		ecs[start_2] = dia;
+	}
+	
 }
 
+	printf("\n эксцентриситет   ");
+	for (int i = 0; i < N_2; i++) {
+		printf("|%3d ", ecs[i]);
+	}
+	for (int i = 0; i < N_2; i++)
+		{
+			if (dist[i] >= max1)
+				max1 = dist[i];
+		}
+		ecs[start_2] = max1;
 
-
-void main(void) {
-
-	DFS_main();
-
+		printf("\n диаметр   ");
+		for (int i = 0; i < N_2; i++) {
+			printf("|%3d ", dia);
+		}
+		for (int i = 0; i < N_2; i++)
+		{
+			if (ecs[i] >= dia)
+				dia = ecs[i];
+		}
+		ecs[start_2] = dia;
 }
